@@ -48,15 +48,15 @@ For more information on the template, see: [Templates Introduction](http://packe
 Packer is able to build images into a plethora of formats. The scope of this document only allows for a discussion on the `amazon-ebs` builder. For more information on builders see: [Builders Introduction](http://packer.io/docs/templates/builders.html)
 
 The `amazon-ebs` builder requires the following keys to have values:
--`region` :: the region in which to launch the build instance.
--`vpc_id` :: the VPC id in which to launch the build instance.
--`subnet_id` :: the subnet id on which to connect the build instance.
--`availability_zone` :: the availability zone in which to launch the build instance.
--`source_ami`:: the AMI to launch as the build instance.
--`instance_type`:: the type of the build instance
--`ssh_username` :: the username of the provisioning user.
--`ami_name` :: the name of the *new* AMI
--`ami_description` :: the description of the *new* AMI
+*`region` :: the region in which to launch the build instance.
+*`vpc_id` :: the VPC id in which to launch the build instance.
+*`subnet_id` :: the subnet id on which to connect the build instance.
+*`availability_zone` :: the availability zone in which to launch the build instance.
+*`source_ami`:: the AMI to launch as the build instance.
+*`instance_type`:: the type of the build instance
+*`ssh_username` :: the username of the provisioning user.
+*`ami_name` :: the name of the *new* AMI
+*`ami_description` :: the description of the *new* AMI
 
 The ami_block_device_mappings key is optional. It uses the same keys as the EC2 CLI tools.
 e.g. For an additional 25G encrypted volume as sdg
@@ -106,12 +106,12 @@ Post-processors are not within the scope of this document. [Please refer here](h
 ## Building with Packer
 
 It is necessary to set the following environment variables:
--`PACKER_SSH_KEYFILE` :: path to the ssh private key to use for the build instance
--`AWS_ACCESS_KEY` :: EC2 API id
--`AWS_SECRET_KEY`:: EC2 API key
--`AWS_GENERATION_ENCRYPTION_KEY` :: KMS encrypting key arn
--`JENKINS_HOST` :: the fqdn of the jenkins host
--`JEKNINS_TOKEN` :: the jenkins api token used to trigger the swap of root devices
+*`PACKER_SSH_KEYFILE` :: path to the ssh private key to use for the build instance
+*`AWS_ACCESS_KEY` :: EC2 API id
+*`AWS_SECRET_KEY`:: EC2 API key
+*`AWS_GENERATION_ENCRYPTION_KEY` :: KMS encrypting key arn
+*`JENKINS_HOST` :: the fqdn of the jenkins host
+*`JEKNINS_TOKEN` :: the jenkins api token used to trigger the swap of root devices
 
 To build:
 ```
