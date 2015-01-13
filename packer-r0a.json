@@ -2,11 +2,11 @@
     "min_packer_version": "0.7.5",
 
     "variables": {
-        "ssh_private_key": "{{env `PACKER_SSH_KEYFILE`}}"
+        "ssh_private_key": "{{env `PACKER_SSH_KEYFILE`}}",
         "aws_access_key": "{{env `AWS_ACCESS_KEY`}}",
         "aws_secret_key": "{{env `AWS_SECRET_KEY`}}",
         "encryption_key_arn": "{{env `AWS_GENERATION_ENCRYPTION_KEY`}}",
-        "jenkins_host_fqdn": "{{env `JENKINS_HOST`}}"
+        "jenkins_host_fqdn": "{{env `JENKINS_HOST`}}",
         "jenkins_token": "{{env `JENKINS_TOKEN`}}"
     },
     "builders": [
@@ -32,7 +32,7 @@
     "provisioners": [
         {
             "type": "shell",
-            "environment_vars": ["ACCESS_KEY={{user `aws_acces_key`}}","SECRET_KEY={{user `aws_secret_key`}}"],
+            "environment_vars": ["ACCESS_KEY={{user `aws_access_key`}}","SECRET_KEY={{user `aws_secret_key`}}"],
             "script": "packs/install-cli-tools"
         },
         {
