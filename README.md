@@ -14,7 +14,7 @@ OSX Users that use the brew package manager can install via:
 
 Unpack the binary.
 
-` Linux: cd /usr/local; unzip ~/Downloads/packer_0.7.5*`
+` Linux: cd /usr/local/bin; unzip ~/Downloads/packer_0.7.5*`
 
 ## Anatomy of a Packer Template
 
