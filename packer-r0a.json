@@ -12,8 +12,8 @@
     "builders": [
         {
             "type": "amazon-ebs",
-            "access_key": "",
-            "secret_key": "",
+            "access_key": "{{user `aws_access_key`}}",
+            "secret_key": "{{user `aws_secret_key`}}",
             "region": "us-west-2",
             "vpc_id": "vpc-011a9d6a",
             "availability_zone": "us-west-2b",
