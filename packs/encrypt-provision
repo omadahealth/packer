@@ -233,7 +233,7 @@ nameserver 172.31.0.2
 search us-west-2.compute.internal omadahealth.net west.omadahealth.net east.omadahealth.net
 EOF
 
-URL="http://$JENKINS_HOST/job/PackerRootSwap/buildWithParameters?token=$TOKEN&INSTID=$INST_ID&RVOLID=$ORIG_ROOT_VOLID&BVOLID=$BOOT_VOL_ID"
+URL="http://$JENKINS_HOST/job/Packer%20-%20Swap%20Root%20Device/buildWithParameters?token=$TOKEN&INSTID=$INST_ID&RVOLID=$ORIG_ROOT_VOLID&BVOLID=$BOOT_VOL_ID"
 echo $URL
 
 cat << EOF > /tmp/provision-os
