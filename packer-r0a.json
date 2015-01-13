@@ -1,0 +1,44 @@
+{
+    "min_packer_version": "0.7.5",
+
+    "variables": {
+        "ssh_private_key": "{{env `PACKER_SSH_KEYFILE`}}"
+        "aws_access_key": "{{env `AWS_ACCESS_KEY`}}",
+        "aws_secret_key": "{{env `AWS_SECRET_KEY`}}",
+        "encryption_key_arn": "{{env `AWS_GENERATION_ENCRYPTION_KEY`}}",
+        "jenkins_host_fqdn": "{{env `JENKINS_HOST`}}"
+        "jenkins_token": "{{env `JENKINS_TOKEN`}}"
+    },
+    "builders": [
+        {
+            "type": "amazon-ebs",
+            "access_key": "",
+            "secret_key": "",
+            "region": "us-west-2",
+            "vpc_id": "vpc-011a9d6a",
+            "availability_zone": "us-west-2b",
+            "source_ami": "ami-838dd9b3",
+            "instance_type": "m3.medium",
+            "ssh_private_ip": "true",
+            "ssh_private_key_file": "",
+            "ssh_username": "ubuntu",
+            "ami_name": "ubuntu-14.04LTS-encrypted-root",
+            "ami_description": "Encrypted Root Volume Ubuntu 14.04 LTS Built by Omada Health Packer Revision 0a. For me information: https://github.com/omadahealth/packer/ReadMe.md",
+            "ssh_timeout": "5m",
+            "subnet_id": "subnet-071a9d6c",
+            "ami_block_device_mappings": []
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell",
+            "environment_vars": ["ACCESS_KEY={{user `aws_acces_key`}}","SECRET_KEY={{user `aws_secret_key`}}"],
+            "script": "packs/install-cli-tools"
+        },
+        {
+            "type": "shell",
+            "environment_vars": ["KEYID={{user `encryption_key_arn`}}","JENKINS_HOST={{user `jenkins_host_fqdn`}}","TOKEN={{user `jenkins_token`}}"],
+            "script": "packs/encrypt-provision"
+        }
+    ]
+}

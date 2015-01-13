@@ -1,0 +1,269 @@
+#!/bin/bash
+
+# Bootstrap a node for Omada Health operations
+
+function _findid () {
+    INST_ID=$(curl -XGET http://169.254.169.254/latest/meta-data/instance-id 2> /dev/null) || exit 254
+    echo "This instance has id: $INST_ID"
+}
+
+function _findVolId () {
+    ORIG_ROOT_VOLID=$(aws ec2 describe-instances --instance-id $INST_ID | grep -o 'vol-.*\w')
+    echo "The **original** root volume's id is: $ORIG_ROOT_VOLID"
+}
+
+# requires $POLICY and $INST_ID to be passed in
+# requires $AZ and $KEYID to be passed in
+function reqDisks () {
+    if [ -z $1 ]; then
+        echo "Unable to request a disk without a key. Exiting."
+        exit 100
+    else
+        #echo "$KEYID"
+        KEYID=$1
+    fi
+
+    echo "Requesting new boot drive in $AZ..."
+    BOOT_REQ_RET=$(aws ec2 create-volume --availability-zone $AZ --size 1 --volume-type gp2 --no-encrypted --output text)
+    if [ "$?" -gt 0 ]; then
+        echo "Request for new boot drive in $AZ failed."
+        exit 120
+    fi
+    #echo $(echo $BOOT_REQ_RET | grep -i id | awk -F\" '{print $4}')
+
+    echo "Requesting new root drive in $AZ with encryption key $KEYID"
+    ROOT_REQ_RET=$(aws ec2 create-volume --availability-zone $AZ --size 8 --volume-type gp2 --encrypted --kms-key-id $KEYID --output text)
+    if [ "$?" -gt 0 ]; then
+        echo "Request for new root drive in $AZ with key $KEYID failed."
+        exit 121
+    fi
+    BOOT_VOL_ID=$(echo $BOOT_REQ_RET | awk '{print $8}')
+    ROOT_VOL_ID=$(echo $ROOT_REQ_RET | awk '{print $9}')
+
+    echo "Boot volume has id: $BOOT_VOL_ID."
+    echo "Root volume has id: $ROOT_VOL_ID."
+
+    LOOP_CONT=true
+    echo "Waiting on volumes to become available..."
+    while $LOOP_CONT; do
+        BOOT_STATUS_RAW=$(aws ec2 describe-volumes --volume-id $BOOT_VOL_ID) 
+        BOOT_STATUS=$(echo $BOOT_STATUS_RAW | awk '{print $8}')
+        ROOT_STATUS_RAW=$(aws ec2 describe-volumes --volume-id $ROOT_VOL_ID)
+        ROOT_STATUS=$(echo $ROOT_STATUS_RAW | awk '{print $9}')
+        echo "Boot Status: $BOOT_STATUS --- Root Status: $ROOT_STATUS ..."
+        if [[ "$BOOT_STATUS" == "available" && "$ROOT_STATUS" == "available" ]]; then
+            echo " Drives are available. Continuing."
+            LOOP_CONT=false
+        fi
+    done
+}
+
+function _prepareToMountBoot () {
+    sudo mkdir -pv /chroot
+    sudo mkdir -pv /chroot/boot
+}
+
+function attachDisks () {
+    N=120
+
+    echo "Requesting volume $BOO_VOL_ID to attach to $INST_ID as xvdc."
+    BOOT_ATTACH_REQ=$(aws ec2 attach-volume --volume-id $BOOT_VOL_ID --instance-id $INST_ID --device xvdc --output text)
+    if [ "$?" -gt 0 ]; then
+        echo "Request to attach volume to instance failed."
+        exit 120
+    fi
+
+    echo "Requesting volume $ROOT_VOL_ID to attach to $INST_ID as xvdd."
+    ROOT_ATTACH_REQ=$(aws ec2 attach-volume --volume-id $ROOT_VOL_ID --instance-id $INST_ID --device xvdd --output text)
+    if [ "$?" -gt 0 ]; then
+        echo "Request to attach volume to instance failed."
+        exit 121
+    fi
+
+    echo "Sleeping for $N seconds to wait for AWS to attach the new volumes."
+    sleep $N
+}
+
+# END of stuff that requires local AWS credentials
+
+function provisionDisks () {
+    BOOT_DEV="/dev/xvdc"
+    ROOT_DEV="/dev/xvdd"
+
+    WAIT=true
+
+    #echo "Waiting on disks to attach to dev pts..."
+    #while $WAIT; do
+    #    if [ -f $ROOT_DEV ]; then
+    #        if [ -f $BOOT_DEV ]; then
+    #            WAIT=false
+    #        fi
+    #    fi
+    #done
+
+    sudo parted -l
+    echo "Provisioning root drive..."
+    sudo parted $ROOT_DEV mklabel msdos
+    echo "Formating root drive..."
+    sudo mkfs.ext4 $ROOT_DEV
+    echo "Provisioning boot drive..."
+    sudo parted $BOOT_DEV mklabel msdos mkpart primary ext4 1Mib 800MiB set 1 boot on name 1 boot
+    echo "Formatting boot drive..."
+    sudo mkfs.ext4 $BOOT_DEV"1"
+    sudo partprobe $BOOT_DEV
+    sudo partprobe $ROOT_DEV
+}
+
+function mountDisks () {
+    BOOT="/boot"
+    ROOT="/"
+    BOOT_DEV="/dev/xvdc1"
+    ROOT_DEV="/dev/xvdd"
+
+    sudo mkdir -pv /chroot
+
+    echo "Mounting root drive -- $ROOT_DEV -- to /chroot."
+    ROOT_MNT_RET=$(sudo mount -t ext4 $ROOT_DEV /chroot)
+    if [ "$?" -gt 0 ]; then
+        exit 120
+    fi
+    sudo mkdir -pv /chroot/boot
+
+    echo "Mounting boot drive -- $BOOT_DEV -- to /chroot/boot."
+    BOOT_MNT_RET=$(sudo mount -t ext4 $BOOT_DEV /chroot/boot)
+    if [ "$?" -gt 0 ]; then
+        exit 121
+    fi
+}
+
+function syncVolumes () {
+    TO_SYN=( 'bin' 'etc' 'home' 'lib' 'lib64' 'sbin' 'tmp' 'srv' 'opt' 'root' 'usr' 'var' 'boot' )
+    for path in "${TO_SYN[@]}"; do
+        dest="/chroot"
+        src="/$path"
+        echo "Syncing $src to $dest ..."
+        sudo rsync -av $src $dest
+    done
+}
+
+function _prepareChroot () {
+    sudo mkdir -pv /chroot/{dev,proc,sys,run}
+    sudo mkdir -pv /chroot/dev/pts
+    sudo mount --bind /dev /chroot/dev
+    sudo mount --bind /dev/pts /chroot/dev/pts
+    sudo mount --bind /proc /chroot/proc
+    sudo mount --bind /sys /chroot/sys
+}
+
+function installGrub () {
+    if [ "$(sudo stat -c %d:%i /)" != "$(sudo stat -c %d:%i /proc/1/root/.)" ]; then
+        sudo grub-install /dev/xvdc
+        sudo grub-mkconfig -o /boot/grub/grub.cfg
+    else
+        exit 120
+    fi
+}
+
+# from chroot only please
+function updateFstab () {
+    ROOT_UUID=$(sudo blkid $ROOT_DEV | grep -o 'UUID.*$' | awk -F\" '{print $2}')
+    BOOT_UUID=$(sudo blkid $BOOT_DEV | grep -o 'UUID.*$' | awk -F\" '{print $2}')
+
+    sudo cp /etc/fstab /tmp/fstab
+    sudo sed -i '/LABEL\=cloudimg-rootfs.*$/d' /tmp/fstab
+    sudo chown ubuntu:ubuntu /tmp/fstab
+    echo -e "UUID=$ROOT_UUID\t\t/\t\text4\tdefaults,discard\t\t0\t0" >> /tmp/fstab
+    echo -e "UUID=$BOOT_UUID\t\t/boot\t\text4\tdefaults,discard\t\t1\t2" >> /tmp/fstab
+    sudo mv -vf /tmp/fstab /chroot/etc/fstab
+    sudo chown root:root /chroot/etc/fstab
+}
+
+# MAIN
+
+_findid
+if [ "$?" -gt 0 ]; then
+    echo "Unable to find instance id."
+fi
+
+AZ="us-west-2b"
+echo "Requesting disks..."
+reqDisks $KEYID
+if [ "$?" -gt 0 ]; then
+    echo "Request to create new volumes failed. Cannot continue."
+    exit 100
+fi
+
+echo "Attaching disks..."
+attachDisks
+if [ "$?" -gt 0 ]; then
+    if [ "$?" -eq 120 ]; then
+        echo "Unable to attach the new boot volume to the instance. Cannot continue."
+        exit 101
+    fi
+    if [ "$?" -eq 121 ]; then
+        echo "Unable to attach the new root volume to the instance. Cannot continue"
+        exit 102
+    fi
+fi
+
+provisionDisks
+if [ "$?" -gt 0 ]; then
+    echo "Provisioning the new volumes failed. Cannot continue."
+    exit 103
+fi
+
+mountDisks
+if [ "$?" -gt 0 ]; then
+    if [ "$?" -eq 120 ]; then
+        echo "Unable to mount the new root partition. Cannot continue."
+        exit 104
+    fi
+    if [ "$?" -eq 121 ]; then
+        echo "Unable to mount the new boot partition. Cannot continue."
+        exit 105
+    fi
+fi
+
+syncVolumes
+
+_prepareChroot
+
+cat << EOF > /tmp/resolv.conf
+nameserver 172.31.0.2
+search us-west-2.compute.internal omadahealth.net west.omadahealth.net east.omadahealth.net
+EOF
+
+URL="http://$JENKINS_HOST/job/PackerRootSwap/buildWithParameters?token=$TOKEN&INSTID=$INST_ID&RVOLID=$ORIG_ROOT_VOLID&BVOLID=$BOOT_VOL_ID"
+echo $URL
+
+cat << EOF > /tmp/provision-os
+#!/bin/bash
+ln -s /run /var/run
+grub-install /dev/xvdc
+grub-mkconfig -o /boot/grub/grub.cfg
+update-initramfs -u -v -k `uname -r`
+sync
+exit
+EOF
+
+updateFstab
+sudo mv -fv /tmp/provision-os /chroot/root/provision-os
+sudo rm -fv /chroot/etc/resolv.conf
+sudo mv -fv /tmp/resolv.conf /chroot/etc/resolv.conf
+sudo chmod +x /chroot/root/provision-os
+sudo chroot /chroot /root/provision-os
+shutdown -h now
+
+#installGrub
+#if [ "$?" -gt 0 ]; then
+#    echo "Something went wrong chrooting to the new disk. Cannot continue."
+#    exit 106
+#fi
+
+#sudo updateFstab
+#if [ "$?" -gt 0 ]; then
+#    echo "Something went wrong chrooting to the new disk. Cannot continue."
+#    exit 107
+#fi
+
+exit 0
