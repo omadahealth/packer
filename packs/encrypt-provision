@@ -181,6 +181,7 @@ function updateFstab () {
 # MAIN
 
 _findid
+_findVolId
 if [ "$?" -gt 0 ]; then
     echo "Unable to find instance id."
 fi
@@ -233,8 +234,7 @@ nameserver 172.31.0.2
 search us-west-2.compute.internal omadahealth.net west.omadahealth.net east.omadahealth.net
 EOF
 
-URL="http://$JENKINS_HOST/job/Packer%20-%20Swap%20Root%20Device/buildWithParameters?token=$TOKEN&INSTID=$INST_ID&RVOLID=$ORIG_ROOT_VOLID&BVOLID=$BOOT_VOL_ID"
-echo $URL
+URL="https://$JENKINS_HOST/job/Packer%20-%20Swap%20Root%20Device/buildWithParameters?token=$TOKEN&INSTID=$INST_ID&RVOLID=$ORIG_ROOT_VOLID&BVOLID=$BOOT_VOL_ID"
 
 cat << EOF > /tmp/provision-os
 #!/bin/bash
@@ -251,8 +251,15 @@ sudo mv -fv /tmp/provision-os /chroot/root/provision-os
 sudo rm -fv /chroot/etc/resolv.conf
 sudo mv -fv /tmp/resolv.conf /chroot/etc/resolv.conf
 sudo chmod +x /chroot/root/provision-os
+echo "Chrooting to new root..."
 sudo chroot /chroot /root/provision-os
-shutdown -h now
+echo "Triggering the root swap jenkins job..."
+echo "machine $JENKINS_HOST login $JENKINS_CREDS" > ~/.netrc
+sed -i 's/:/ password /g' ~/.netrc
+curl -XPOST -n $URL 2> /dev/null
+echo "Shutting down host for root device swap."
+sudo shutdown -h now
+sleep 30
 
 #installGrub
 #if [ "$?" -gt 0 ]; then

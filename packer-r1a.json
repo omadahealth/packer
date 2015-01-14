@@ -7,7 +7,8 @@
         "aws_secret_key": "{{env `AWS_SECRET_KEY`}}",
         "encryption_key_arn": "{{env `AWS_GENERATION_ENCRYPTION_KEY`}}",
         "jenkins_host_fqdn": "{{env `JENKINS_HOST`}}",
-        "jenkins_token": "{{env `JENKINS_TOKEN`}}"
+        "jenkins_token": "{{env `JENKINS_TOKEN`}}",
+        "jenkins_credentials": "{{env `JENKINS_CREDS`}}"
     },
     "builders": [
         {
@@ -20,11 +21,10 @@
             "source_ami": "ami-838dd9b3",
             "instance_type": "m3.medium",
             "ssh_private_ip": "true",
-            "ssh_private_key_file": "{{user `ssh_private_key`}}",
             "ssh_username": "ubuntu",
-            "ami_name": "ubuntu-14.04LTS-encrypted-root",
-            "ami_description": "Encrypted Root Volume Ubuntu 14.04 LTS Built by Omada Health Packer Revision 0a. For me information: https://github.com/omadahealth/packer/ReadMe.md",
-            "ssh_timeout": "5m",
+            "ami_name": "ubuntu-14.04LTS-encrypted-root-1a",
+            "ami_description": "Encrypted Root Volume Ubuntu 14.04 LTS Built by Omada Health Packer Revision 1a. For me information: https://github.com/keyboardscience/packer/README.md",
+            "ssh_timeout": "15m",
             "subnet_id": "subnet-071a9d6c",
             "ami_block_device_mappings": []
         }
@@ -37,8 +37,12 @@
         },
         {
             "type": "shell",
-            "environment_vars": ["KEYID={{user `encryption_key_arn`}}","JENKINS_HOST={{user `jenkins_host_fqdn`}}","TOKEN={{user `jenkins_token`}}"],
+            "environment_vars": ["KEYID={{user `encryption_key_arn`}}","JENKINS_HOST={{user `jenkins_host_fqdn`}}","TOKEN={{user `jenkins_token`}}","JENKINS_CREDS={{user `jenkins_credentials`}}"],
             "script": "packs/encrypt-provision"
+        },
+        {
+            "type": "shell",
+            "inline": "sleep 15"
         }
     ]
 }
