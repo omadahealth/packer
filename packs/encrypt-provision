@@ -142,7 +142,7 @@ function syncVolumes () {
         dest="/chroot"
         src="/$path"
         echo "Syncing $src to $dest ..."
-        sudo rsync -av $src $dest
+        sudo rsync -a $src $dest 2> /dev/null
     done
 }
 
