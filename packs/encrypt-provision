@@ -256,7 +256,7 @@ sudo chroot /chroot /root/provision-os
 echo "Triggering the root swap jenkins job..."
 echo "machine $JENKINS_HOST login $JENKINS_CREDS" > ~/.netrc
 sed -i 's/:/ password /g' ~/.netrc
-curl -XPOST -n $URL 2> /dev/null
+curl -XPOST -n $URL
 echo "Shutting down host for root device swap."
 sudo shutdown -h now
 sleep 30
