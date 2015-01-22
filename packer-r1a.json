@@ -23,7 +23,7 @@
             "ssh_private_ip": "true",
             "ssh_username": "ubuntu",
             "ami_name": "ubuntu-14.04LTS-encrypted-root-1a",
-            "ami_description": "Encrypted Root Volume Ubuntu 14.04 LTS Built by Omada Health Packer Revision 1a. For me information: https://github.com/keyboardscience/packer/README.md",
+            "ami_description": "Encrypted Root Volume Ubuntu 14.04 LTS Built by Omada Health Packer Revision 1a. For more information: https://github.com/keyboardscience/packer/README.md",
             "ssh_timeout": "15m",
             "subnet_id": "subnet-071a9d6c",
             "ami_block_device_mappings": []
