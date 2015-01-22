@@ -8,7 +8,7 @@
         "encryption_key_arn": "{{env `AWS_GENERATION_ENCRYPTION_KEY`}}",
         "jenkins_host_fqdn": "{{env `JENKINS_HOST`}}",
         "jenkins_token": "{{env `JENKINS_TOKEN`}}",
-        "jenkins_credentials": "{{env `JENKINS_CREDS`}}"
+        "jenkins_credentials": "{{env `JENKINS_CREDS`}}",
         "revision": "{{env `PACKER_REVISION`}}"
     },
     "builders": [
