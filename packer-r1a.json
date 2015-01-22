@@ -9,6 +9,7 @@
         "jenkins_host_fqdn": "{{env `JENKINS_HOST`}}",
         "jenkins_token": "{{env `JENKINS_TOKEN`}}",
         "jenkins_credentials": "{{env `JENKINS_CREDS`}}"
+        "revision": "{{env `PACKER_REVISION`}}"
     },
     "builders": [
         {
@@ -22,7 +23,7 @@
             "instance_type": "m3.medium",
             "ssh_private_ip": "true",
             "ssh_username": "ubuntu",
-            "ami_name": "ubuntu-14.04LTS-encrypted-root-1a",
+            "ami_name": "ubuntu-14.04LTS-encrypted-root-{{user `revision`}}",
             "ami_description": "Encrypted Root Volume Ubuntu 14.04 LTS Built by Omada Health Packer Revision 1a. For more information: https://github.com/keyboardscience/packer/README.md",
             "ssh_timeout": "15m",
             "subnet_id": "subnet-071a9d6c",
