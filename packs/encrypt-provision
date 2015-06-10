@@ -32,7 +32,7 @@ function reqDisks () {
     #echo $(echo $BOOT_REQ_RET | grep -i id | awk -F\" '{print $4}')
 
     echo "Requesting new root drive in $AZ with encryption key $KEYID"
-    ROOT_REQ_RET=$(aws ec2 create-volume --availability-zone $AZ --size 8 --volume-type gp2 --encrypted --kms-key-id $KEYID --output text)
+    ROOT_REQ_RET=$(aws ec2 create-volume --availability-zone $AZ --size 16 --volume-type gp2 --encrypted --kms-key-id $KEYID --output text)
     if [ "$?" -gt 0 ]; then
         echo "Request for new root drive in $AZ with key $KEYID failed."
         exit 121
