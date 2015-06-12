@@ -47,8 +47,10 @@ function reqDisks () {
     echo "Waiting on volumes to become available..."
     while $LOOP_CONT; do
         BOOT_STATUS_RAW=$(aws ec2 describe-volumes --volume-id $BOOT_VOL_ID) 
+        echo $BOOT_STATUS_RAW
         BOOT_STATUS=$(echo $BOOT_STATUS_RAW | awk '{print $8}')
         ROOT_STATUS_RAW=$(aws ec2 describe-volumes --volume-id $ROOT_VOL_ID)
+        echo $ROOT_STATUS_RAW
         ROOT_STATUS=$(echo $ROOT_STATUS_RAW | awk '{print $9}')
         echo "Boot Status: $BOOT_STATUS --- Root Status: $ROOT_STATUS ..."
         if [[ "$BOOT_STATUS" == "available" && "$ROOT_STATUS" == "available" ]]; then
