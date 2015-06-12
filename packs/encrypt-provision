@@ -37,10 +37,8 @@ function reqDisks () {
         echo "Request for new root drive in $AZ with key $KEYID failed."
         exit 121
     fi
-    echo $BOOT_REQ_RET
-    echo $ROOT_REQ_RET
-    BOOT_VOL_ID=$(echo $BOOT_REQ_RET | awk '{print $8}')
-    ROOT_VOL_ID=$(echo $ROOT_REQ_RET | awk '{print $9}')
+    BOOT_VOL_ID=$(echo $BOOT_REQ_RET | awk '{print $7}')
+    ROOT_VOL_ID=$(echo $ROOT_REQ_RET | awk '{print $8}')
 
     echo "Boot volume has id: $BOOT_VOL_ID."
     echo "Root volume has id: $ROOT_VOL_ID."
