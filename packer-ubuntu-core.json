@@ -27,6 +27,7 @@
             "ami_description": "Encrypted Root Volume Ubuntu 15.04 Core Built by Omada Health Packer Revision 1a. For more information: https://github.com/keyboardscience/packer/README.md",
             "ssh_timeout": "15m",
             "subnet_id": "subnet-071a9d6c",
+            "user_data_file": "cloud.cfg",
             "ami_block_device_mappings": []
         }
     ],
