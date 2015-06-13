@@ -19,7 +19,7 @@
             "region": "us-west-2",
             "vpc_id": "vpc-011a9d6a",
             "availability_zone": "us-west-2b",
-            "source_ami": "ami-cf576cff",
+            "source_ami": "ami-33566d03",
             "instance_type": "m3.medium",
             "ssh_private_ip": "true",
             "ssh_username": "ubuntu",
