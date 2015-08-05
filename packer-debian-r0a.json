@@ -22,7 +22,7 @@
             "source_ami": "ami-818eb7b1",
             "instance_type": "m3.medium",
             "ssh_private_ip": "true",
-            "ssh_username": "ubuntu",
+            "ssh_username": "admin",
             "ami_name": "debian-jessie8-encrypted-root-{{user `revision`}}",
             "ami_description": "Debian Jessie (8) Encrypted Root AMI. For more information: https://github.com/keyboardscience/packer/README.md",
             "ssh_timeout": "15m",
