@@ -17,7 +17,7 @@
             "access_key": "{{user `aws_access_key`}}",
             "secret_key": "{{user `aws_secret_key`}}",
             "region": "us-west-2",
-            "vpc_id": "vpc-011a9d6a",
+            "vpc_id": "vpc-2c15b649",
             "availability_zone": "us-west-2b",
             "source_ami": "ami-838dd9b3",
             "instance_type": "m3.medium",
@@ -26,11 +26,15 @@
             "ami_name": "ubuntu-14.04LTS-encrypted-root-{{user `revision`}}",
             "ami_description": "Encrypted Root Volume Ubuntu 14.04 LTS Built by Omada Health Packer Revision 1a. For more information: https://github.com/keyboardscience/packer/README.md",
             "ssh_timeout": "15m",
-            "subnet_id": "subnet-071a9d6c",
+            "subnet_id": "subnet-2fe33958",
             "ami_block_device_mappings": []
         }
     ],
     "provisioners": [
+        {
+            "type": "shell",
+            "script": "packs/cleanup"
+        },
         {
             "type": "shell",
             "environment_vars": ["ACCESS_KEY={{user `aws_access_key`}}","SECRET_KEY={{user `aws_secret_key`}}"],

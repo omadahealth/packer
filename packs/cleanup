@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Purpose: clean up packages that are artifacts of ubuntu distribution
+
+PACKAGE_LIST="landscape-common landscape-client dosfstools gdisk laptop-detect open-vm-tools byobu mtr-tiny nano ufw ntfs-3g"
+
+sudo apt-get remove -y --purge $PACKAGE_LIST
+sudo apt-get upgrade -y
