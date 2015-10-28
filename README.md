@@ -121,3 +121,13 @@ To build:
 packer validate packer-r0a.json
 packer build packer-r0a.json
 ```
+
+### Building the Encrypted Root Volume Ubuntu Image
+
+To Build:
+```
+export VPC_ID="<Your Value Here!!!>"
+export SUBNET_ID="<Your Value Here!!!>"
+packer validate packer-ubuntu-r1a.json
+packer build packer-ubuntu-r1a.json
+```
