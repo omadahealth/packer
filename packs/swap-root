@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+INSTID=$(aws ec2 describe-instances --filters Name=tag:Name,Values="Packer Builder" --filters Name=vpc-id,Values=$VPC_ID | grep -Eo '\si-[a-z0-9]+\s' | awk '{print $1}')
+RVOLID=$(aws ec2 describe-instance-attribute --attribute blockDeviceMapping --instance-id $INSTID | grep -A 1 -E 'sda' | grep -oE 'vol-[a-z0-9]+')
+BVOLID=$(aws ec2 describe-instance-attribute --attribute blockDeviceMapping --instance-id $INSTID | grep -A 1 -E 'xvdc' | grep -oE 'vol-[a-z0-9]+')
+
+echo "$INSTID ------ original root: $RVOLID ----- new (boot) volume to become root: $BVOLID"
+
+sleep 120
+
+aws ec2 detach-volume --region us-west-2 --instance-id $INSTID --volume-id $RVOLID --no-force
+aws ec2 detach-volume --region us-west-2 --instance-id $INSTID --volume-id $BVOLID --no-force
+
+sleep 10
+
+aws ec2 attach-volume --region us-west-2 --instance-id $INSTID --volume-id $BVOLID --device /dev/sda1
+
+sleep 10
+
+aws ec2 start-instances --region us-west-2 --instance-ids $INSTID
+
+sleep 120

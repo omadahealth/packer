@@ -6,10 +6,10 @@
         "aws_access_key": "{{env `AWS_ACCESS_KEY`}}",
         "aws_secret_key": "{{env `AWS_SECRET_KEY`}}",
         "encryption_key_arn": "{{env `AWS_GENERATION_ENCRYPTION_KEY`}}",
-        "jenkins_host_fqdn": "{{env `JENKINS_HOST`}}",
-        "jenkins_token": "{{env `JENKINS_TOKEN`}}",
-        "jenkins_credentials": "{{env `JENKINS_CREDS`}}",
-        "revision": "{{env `PACKER_REVISION`}}"
+        "revision": "{{env `PACKER_REVISION`}}",
+        "vpc_id": "{{env `VPC_ID`}}",
+        "subnet_id": "{{env `SUBNET_ID`}}"
+
     },
     "builders": [
         {
@@ -17,16 +17,15 @@
             "access_key": "{{user `aws_access_key`}}",
             "secret_key": "{{user `aws_secret_key`}}",
             "region": "us-west-2",
-            "vpc_id": "vpc-2c15b649",
+            "vpc_id": "{{user `vpc_id`}}",
             "availability_zone": "us-west-2b",
             "source_ami": "ami-838dd9b3",
             "instance_type": "m3.medium",
-            "ssh_private_ip": "true",
             "ssh_username": "ubuntu",
             "ami_name": "ubuntu-14.04LTS-encrypted-root-{{user `revision`}}",
             "ami_description": "Encrypted Root Volume Ubuntu 14.04 LTS Built by Omada Health Packer Revision 1a. For more information: https://github.com/keyboardscience/packer/README.md",
             "ssh_timeout": "15m",
-            "subnet_id": "subnet-2fe33958",
+            "subnet_id": "{{user `subnet_id`}}",
             "ami_block_device_mappings": []
         }
     ],
@@ -42,12 +41,16 @@
         },
         {
             "type": "shell",
-            "environment_vars": ["KEYID={{user `encryption_key_arn`}}","JENKINS_HOST={{user `jenkins_host_fqdn`}}","TOKEN={{user `jenkins_token`}}","JENKINS_CREDS={{user `jenkins_credentials`}}"],
+            "environment_vars": ["KEYID={{user `encryption_key_arn`}}"],
             "script": "packs/encrypt-provision"
         },
         {
-            "type": "shell",
-            "inline": "sleep 15"
+            "type": "shell-local",
+            "command": "$(pwd)/packs/swap-root"
+        },
+        {
+            "type": "shell-local",
+            "command": "sleep 120"
         }
     ]
 }

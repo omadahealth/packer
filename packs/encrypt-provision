@@ -234,8 +234,6 @@ nameserver 172.31.0.2
 search us-west-2.compute.internal omadahealth.net west.omadahealth.net east.omadahealth.net
 EOF
 
-URL="https://$JENKINS_HOST/job/Packer%20-%20Swap%20Root%20Device/buildWithParameters?token=$TOKEN&INSTID=$INST_ID&RVOLID=$ORIG_ROOT_VOLID&BVOLID=$BOOT_VOL_ID"
-
 cat << EOF > /tmp/provision-os
 #!/bin/bash
 ln -s /run /var/run
@@ -253,24 +251,6 @@ sudo mv -fv /tmp/resolv.conf /chroot/etc/resolv.conf
 sudo chmod +x /chroot/root/provision-os
 echo "Chrooting to new root..."
 sudo chroot /chroot /root/provision-os
-echo "Triggering the root swap jenkins job..."
-echo "machine $JENKINS_HOST login $JENKINS_CREDS" > ~/.netrc
-sed -i 's/:/ password /g' ~/.netrc
-curl -XPOST -n $URL
 echo "Shutting down host for root device swap."
 sudo shutdown -h now
-sleep 30
 
-#installGrub
-#if [ "$?" -gt 0 ]; then
-#    echo "Something went wrong chrooting to the new disk. Cannot continue."
-#    exit 106
-#fi
-
-#sudo updateFstab
-#if [ "$?" -gt 0 ]; then
-#    echo "Something went wrong chrooting to the new disk. Cannot continue."
-#    exit 107
-#fi
-
-exit 0
