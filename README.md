@@ -114,7 +114,7 @@ It is necessary to set the following environment variables:
 * `AWS_SECRET_KEY`:: EC2 API key
 * `AWS_GENERATION_ENCRYPTION_KEY` :: KMS encrypting key arn
 * `VPC_ID` :: Default VPC id
-  SUBNET_ID` :: Subnet ID in us-west-2a availability zone
+* `SUBNET_ID` :: Subnet ID in us-west-2a availability zone
 
 To build:
 ```
