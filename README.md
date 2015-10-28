@@ -110,12 +110,11 @@ Post-processors are not within the scope of this document. [Please refer here](h
 ## Building with Packer
 
 It is necessary to set the following environment variables:
-* `PACKER_SSH_KEYFILE` :: path to the ssh private key to use for the build instance
 * `AWS_ACCESS_KEY` :: EC2 API id
 * `AWS_SECRET_KEY`:: EC2 API key
 * `AWS_GENERATION_ENCRYPTION_KEY` :: KMS encrypting key arn
-* `JENKINS_HOST` :: the fqdn of the jenkins host
-* `JEKNINS_TOKEN` :: the jenkins api token used to trigger the swap of root devices
+* `VPC_ID` :: Default VPC id
+  SUBNET_ID` :: Subnet ID in us-west-2a availability zone
 
 To build:
 ```
