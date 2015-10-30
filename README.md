@@ -2,19 +2,14 @@
 
 ## Downloading and Installing Packer
 
-You can download the binary from:
-
-` Linux: https://dl.bintray.com/mitchellh/packer/packer_0.7.5_linux_amd64.zip`
-
 OSX Users that use the brew package manager can install via:
 
-`brew tap homebrew/binary`
+```
+brew tap homebrew/binary
+brew install packer
+```
 
-`brew install packer`
-
-Unpack the binary.
-
-` Linux: cd /usr/local/bin; unzip ~/Downloads/packer_0.7.5*`
+Or go to http://packer.io/downloads
 
 ## Anatomy of a Packer Template
 
@@ -124,10 +119,17 @@ packer build packer-r0a.json
 
 ### Building the Encrypted Root Volume Ubuntu Image
 
+Before building:
+```
+$ aws configure
+AWS Access Key ID [****************]: 
+AWS Secret Access Key [****************]: 
+Default region name [None]: us-west-2
+Default output format [None]: text
+```
+
 To Build:
 ```
-export VPC_ID="<Your Value Here!!!>"
-export SUBNET_ID="<Your Value Here!!!>"
 packer validate packer-ubuntu-r1a.json
 packer build packer-ubuntu-r1a.json
 ```
