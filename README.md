@@ -1,15 +1,12 @@
 # Omada Packer.io Amazon AMI Creation
 
-## Downloading and Installing Packer
+## Installing Packer
 
 OSX Users that use the brew package manager can install via:
 
 ```
-brew tap homebrew/binary
 brew install packer
 ```
-
-Or go to http://packer.io/downloads
 
 ## Anatomy of a Packer Template
 
