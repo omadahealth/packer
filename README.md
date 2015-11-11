@@ -116,7 +116,7 @@ packer build packer-r0a.json
 
 ### Building the Encrypted Root Volume Ubuntu Image
 
-Before building:
+Before building (`brew install awscli` if you don't have the `aws` command):
 ```
 $ aws configure
 AWS Access Key ID [****************]: 
