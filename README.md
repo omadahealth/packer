@@ -45,8 +45,6 @@ Packer is able to build images into a plethora of formats. The scope of this doc
 
 The `amazon-ebs` builder requires the following keys to have values:
 * `region` :: the region in which to launch the build instance.
-* `vpc_id` :: the VPC id in which to launch the build instance.
-* `subnet_id` :: the subnet id on which to connect the build instance.
 * `availability_zone` :: the availability zone in which to launch the build instance.
 * `source_ami`:: the AMI to launch as the build instance.
 * `instance_type`:: the type of the build instance
@@ -99,22 +97,23 @@ The `ansible` provisioner allows one to provision the build instance using *loca
 
 Post-processors are not within the scope of this document. [Please refer here](http://packer.io/docs/templates/post-processors.html).
 
-## Building with Packer
+## Building the Encrypted Root Volume Ubuntu Image
+
+The purpose of this repo is to build the standard Amazon Machine Image (AMI) for Omada, which is customized to include
+an encrypted root volume.
 
 It is necessary to set the following environment variables:
 * `AWS_ACCESS_KEY` :: EC2 API id
 * `AWS_SECRET_KEY`:: EC2 API key
 * `AWS_GENERATION_ENCRYPTION_KEY` :: KMS encrypting key arn
-* `VPC_ID` :: Default VPC id
-* `SUBNET_ID` :: Subnet ID in us-west-2a availability zone
+    - You can create an encryption key using AWS Identity & Access Management
+    - Make sure it's created in the `us-west-2` region
 
-To build:
-```
-packer validate packer-r0a.json
-packer build packer-r0a.json
-```
-
-### Building the Encrypted Root Volume Ubuntu Image
+By default, Packer will build the image inside your account's default VPC, within the default subnet corresponding to
+the `availability_zone` specified in the Packer template. If you would like to use a **non-default VPC and subnet**, you
+can set the following environment variables as well:
+* `VPC_ID` :: Non-default VPC ID
+* `SUBNET_ID` :: Subnet ID in us-west-2b availability zone
 
 Before building (`brew install awscli` if you don't have the `aws` command):
 ```
